@@ -13,10 +13,13 @@ import {
 } from "@ant-design/icons";
 import { socket } from "../../context/VideoState";
 import axios from "axios";
+import { useParams } from "react-router-dom"
 
 const Options = () => {
   const [idToCall, setIdToCall] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);  
+  const [doctorListData, setDoctorListData] = useState([])
+  let { token } = useParams();
 
   const Audio = useRef();
   const {
@@ -59,21 +62,27 @@ const Options = () => {
     } else setIsModalVisible(false);
   }, [call.isReceivingCall]);
 
-  const handleChange = (value) => {
-    console.log(`selected ${value}`);
-
-    setName(value);
-    localStorage.setItem("name", value);
-    setIdToCall(me)
+  const handleChange = (value, selectedData) => {
+    console.log(value, selectedData.value)
+    setName(selectedData.label);
+    localStorage.setItem("name", selectedData.label);
+    setIdToCall(selectedData.value)
   };
-  console.log(me, 'jojo//')
+
+
+  const jsonDataTraversal = (jsonData) =>{
+    setDoctorListData(jsonData?.data?.map((item)=> {
+      return ({ label: item.User.fullName, value:item.callId, status:item.isBusy})
+    })) 
+  }
+
   useEffect(() => {
     axios.get('https://api.vetsoncall.in/api/call/doctor-list', {
       headers:{
         'accept': 'application/json' ,
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFmMjJiNTg2LTlhZjAtNDAyOC1hZDc4LTRlODFlMzU4NDE1YSIsImlhdCI6MTY2ODk0NjEzOSwiZXhwIjoyMTg3MzQ2MTM5fQ.mm4mmhqXqApYsb8Y9UxC9l5UA38ev5hEPMjVd4cYkPw'
+        'Authorization': `Bearer ${token}`
       }
-      }).then(response => console.log(response.data))
+      }).then(response => jsonDataTraversal(response.data))
       .catch(error => console.log(error));
   }, []);
 
@@ -87,24 +96,7 @@ const Options = () => {
             width: '100%',
           }}
           onChange={handleChange}
-          options={[
-            {
-              value: 'jack',
-              label: 'Jack',
-            },
-            {
-              value: 'lucy',
-              label: 'Lucy',
-            },
-            {
-              value: 'disabled',
-              label: 'Disabled',
-            },
-            {
-              value: 'Yiminghe',
-              label: 'yiminghe',
-            },
-          ]}
+          options={doctorListData}
         />
         
       </div>

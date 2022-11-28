@@ -7,10 +7,9 @@ import "font-awesome/css/font-awesome.min.css";
 const App = () => {
   
   return (
-
     <Router>
       <Switch>
-        <Route path="/" component={Home} />
+        <Route path="/:token" component={Home} />
       </Switch>
     </Router>
 
